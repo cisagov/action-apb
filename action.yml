@@ -23,7 +23,7 @@ inputs:
     description: "Limit the number of rebuilds that will be triggered."
     required: false
     default: 10
-  repo-query:
+  repo_query:
     description: "GitHub search query used to find repositories for rebuild.
       See: https://developer.github.com/v3/search/#constructing-a-search-query"
     required: true
@@ -31,7 +31,7 @@ inputs:
     description: "The workflow to monitor."
     required: false
     default: "build.yml"
-  write-filename:
+  write_filename:
     description: "The output file in which to write the state json."
     required: false
     default: "apb.json"
