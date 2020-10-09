@@ -20,7 +20,7 @@ jobs:
           access_token: ${{ env.ACCESS_TOKEN }}
           build_age: "7d"
           event_type: "apb"
-          max_rebuilds: 10
+          max_rebuilds: 20
           repo_query: "org:cisagov archived:false"
           workflow_id: "build.yml"
       - name: Save apb output as an artifact
