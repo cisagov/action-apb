@@ -47,6 +47,6 @@ jobs:
           git commit -m "$GITHUB_EVENT_NAME"
           git push
       - name: Setup tmate debug session
-        uses: mxschmitt/action-tmate@v2
+        uses: mxschmitt/action-tmate@v3
         if: github.event_name == 'repository_dispatch' &&
             github.event.action == 'run_tmate'
