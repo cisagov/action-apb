@@ -17,5 +17,5 @@ LABEL org.opencontainers.image.vendor="Cyber and Infrastructure Security Agency"
 LABEL org.opencontainers.image.version=${VERSION}
 
 COPY . ./
-RUN pip install -r requirements.txt
-ENTRYPOINT ["/src/entrypoint.py"]
+RUN pip install --requirement requirements.txt
+ENTRYPOINT ["python3", "-m", "apb"]

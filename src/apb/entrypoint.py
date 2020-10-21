@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """GitHub Action to rebuild respositories that haven't be built in a while."""
 
 # Standard Python Libraries
@@ -7,7 +6,6 @@ import json
 import logging
 import os
 from pathlib import Path
-import sys
 from typing import Generator, Optional
 
 # Third-Party Libraries
@@ -166,7 +164,3 @@ def main() -> int:
         json.dump(all_repo_status, f, indent=4, sort_keys=True)
     logging.info("Completed.")
     return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())
