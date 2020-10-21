@@ -1,4 +1,4 @@
-"""GitHub Action to rebuild respositories that haven't be built in a while."""
+"""GitHub Action to rebuild respositories that haven't been built in a while."""
 
 # Standard Python Libraries
 from datetime import datetime
