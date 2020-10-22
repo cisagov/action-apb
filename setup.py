@@ -93,6 +93,6 @@ setup(
             "pytest",
         ]
     },
-    # Conveniently allows one to run the CLI tool as `example`
+    # Conveniently allows one to run the CLI tool as `apb`
     entry_points={"console_scripts": ["apb = apb.entrypoint:main"]},
 )
