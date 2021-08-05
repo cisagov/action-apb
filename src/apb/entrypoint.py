@@ -6,6 +6,7 @@ import json
 import logging
 import os
 from pathlib import Path
+import sys
 from typing import Generator, Optional
 
 # Third-Party Libraries
@@ -48,7 +49,7 @@ def get_last_run(
         return isoparse(last_run_date).replace(tzinfo=None)
 
 
-def main() -> int:
+def main() -> None:
     """Parse evironment and perform requested actions."""
     # Set up logging
     logging.basicConfig(format="%(levelname)s %(message)s", level="INFO")
@@ -68,39 +69,39 @@ def main() -> int:
         logging.fatal(
             "Access token environment variable must be set. (INPUT_ACCESS_TOKEN)"
         )
-        return -1
+        sys.exit(-1)
 
     if build_age is None:
         logging.fatal("Build age environment variable must be set. (INPUT_BUILD_AGE)")
-        return -1
+        sys.exit(-1)
 
     if event_type is None:
         logging.fatal("Event type environment variable must be set. (INPUT_EVENT_TYPE)")
-        return -1
+        sys.exit(-1)
 
     if github_workspace_dir is None:
         logging.fatal(
             "GitHub workspace environment variable must be set. (GITHUB_WORKSPACE)"
         )
-        return -1
+        sys.exit(-1)
 
     if repo_query is None:
         logging.fatal(
             "Reository query environment variable must be set. (INPUT_REPO_QUERY)"
         )
-        return -1
+        sys.exit(-1)
 
     if workflow_id is None:
         logging.fatal(
             "Workflow ID environment variable must be set. (INPUT_WORKFLOW_ID)"
         )
-        return -1
+        sys.exit(-1)
 
     if write_filename is None:
         logging.fatal(
             "Output filename environment variable must be set. (INPUT_WRITE_FILENAME)"
         )
-        return -1
+        sys.exit(-1)
 
     # setup time calculations
     now: datetime = datetime.utcnow()
@@ -163,4 +164,3 @@ def main() -> int:
     with status_file.open("w") as f:
         json.dump(all_repo_status, f, indent=4, sort_keys=True)
     logging.info("Completed.")
-    return 0
