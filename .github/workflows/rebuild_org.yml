@@ -6,6 +6,7 @@ on:
     types: [run_tmate, run]
   schedule:
     - cron: "0 * * * *"
+  workflow_dispatch:
 
 env:
   ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
