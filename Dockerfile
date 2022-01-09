@@ -17,5 +17,6 @@ LABEL org.opencontainers.image.vendor="Cyber and Infrastructure Security Agency"
 LABEL org.opencontainers.image.version=${VERSION}
 
 COPY . ./
+RUN apk add --no-cache build-base libffi-dev
 RUN pip install --requirement requirements.txt
 ENTRYPOINT ["python3", "-m", "apb"]
