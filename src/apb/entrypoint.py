@@ -22,7 +22,7 @@ def get_repo_list(
     g: Github, repo_query: str
 ) -> Generator[Repository.Repository, None, None]:
     """Generate a list of repositories based on the query."""
-    print(f"Querying for repositories: {repo_query}")
+    logging.info("Querying for repositories: %s", repo_query)
     matching_repos = g.search_repositories(query=repo_query)
     for repo in matching_repos:
         yield repo
