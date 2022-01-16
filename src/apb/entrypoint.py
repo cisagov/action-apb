@@ -32,13 +32,16 @@ def get_last_run(
     session: requests.Session, repo: Repository.Repository, workflow_id: str
 ) -> Optional[datetime]:
     """Get the last run time for a workflow in a respository."""
-    logging.debug(f"Requesting workflow runs for repository {repo.name}")
+    logging.debug("Requesting workflow runs for repository %s", repo.name)
     response = session.get(
         f"https://api.github.com/repos/{repo.full_name}/actions/workflows/{workflow_id}/runs"
     )
     if response.status_code != 200:
         logging.debug(
-            f"No previous runs for {workflow_id} in {repo.full_name}, {response.status_code}"
+            "No previous runs for %s in %s, %d",
+            workflow_id,
+            repo.full_name,
+            response.status_code,
         )
         return None
     workflow_runs = response.json()["workflow_runs"]
@@ -109,7 +112,7 @@ def main() -> None:
     time_delta: relativedelta = relativedelta(seconds=build_age_seconds)
     past_date: datetime = now - time_delta
 
-    logging.info(f"Rebuilding repositories that haven't run since {past_date}")
+    logging.info("Rebuilding repositories that haven't run since %s", past_date)
 
     # Create a Github access object
     g = Github(access_token)
@@ -135,7 +138,7 @@ def main() -> None:
         last_run = get_last_run(session, repo, workflow_id)
         if last_run is None:
             # repo does not have the workflow configured
-            logging.info(f"{repo.full_name} does not have workflow {workflow_id}")
+            logging.info("%s does not have workflow %s", repo.full_name, workflow_id)
             repo_status["workflow"] = None
             continue
         # repo has the workflow we're looking for
@@ -145,22 +148,27 @@ def main() -> None:
         repo_status["run_age"] = format_timedelta(delta)
         repo_status["event_sent"] = False
         if last_run < past_date:
-            logging.info(f"{repo.full_name} needs a rebuild: {format_timedelta(delta)}")
+            logging.info(
+                "%s needs a rebuild: %s", repo.full_name, format_timedelta(delta)
+            )
             if max_rebuilds == 0 or rebuilds_triggered < max_rebuilds:
                 rebuilds_triggered += 1
                 repo.create_repository_dispatch(event_type)
                 repo_status["event_sent"] = True
                 logging.info(
-                    f"Sent {event_type} event #{rebuilds_triggered} to {repo.full_name}."
+                    "Sent %s event #%d to %s.",
+                    event_type,
+                    rebuilds_triggered,
+                    repo.full_name,
                 )
                 if rebuilds_triggered == max_rebuilds:
                     logging.warning("Max rebuild events sent.")
         else:
-            logging.info(f"{repo.full_name} is OK: {format_timedelta(delta)}")
+            logging.info("%s is OK: %s", repo.full_name, format_timedelta(delta))
 
     # Write json state to an output file
     status_file: Path = Path(github_workspace_dir) / Path(write_filename)
-    logging.info(f"Writing status file to {status_file}")
+    logging.info("Writing status file to %s", status_file)
     with status_file.open("w") as f:
         json.dump(all_repo_status, f, indent=4, sort_keys=True)
     logging.info("Completed.")
