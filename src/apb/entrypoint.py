@@ -11,11 +11,9 @@ from typing import Generator, Optional
 
 # Third-Party Libraries
 from babel.dates import format_timedelta
-from dateutil.parser import isoparse
 from dateutil.relativedelta import relativedelta
-from github import Github, Repository
+from github import Github, GithubException, Repository, Workflow
 import pytimeparse
-import requests
 
 
 def get_repo_list(
@@ -28,28 +26,43 @@ def get_repo_list(
         yield repo
 
 
-def get_last_run(
-    session: requests.Session, repo: Repository.Repository, workflow_id: str
-) -> Optional[datetime]:
-    """Get the last run time for a workflow in a respository."""
-    logging.debug("Requesting workflow runs for repository %s", repo.name)
-    response = session.get(
-        f"https://api.github.com/repos/{repo.full_name}/actions/workflows/{workflow_id}/runs"
+def get_workflow(
+    repo: Repository.Repository, workflow_id: str
+) -> Optional[Workflow.Workflow]:
+    """Retrieve the desired workflow from the target repository."""
+    logging.debug(
+        "Retrieving workflow '%s' for repository %s", workflow_id, repo.full_name
     )
-    if response.status_code != 200:
-        logging.debug(
-            "No previous runs for %s in %s, %d",
-            workflow_id,
-            repo.full_name,
-            response.status_code,
+
+    try:
+        workflow = repo.get_workflow(workflow_id)
+    except GithubException as err:
+        if err.status == 404:
+            logging.info(
+                "No workflow with id '%s' was found in %s", workflow_id, repo.full_name
+            )
+            return None
+
+        logging.warning(
+            "Error retrieving workflow '%s' in %s: %s", workflow_id, repo.full_name, err
         )
         return None
-    workflow_runs = response.json()["workflow_runs"]
-    if len(workflow_runs) == 0:
+
+    return workflow
+
+
+def get_last_run(workflow: Workflow.Workflow, target_branch: str) -> Optional[datetime]:
+    """Get the last run time for the given workflow."""
+    logging.debug(
+        "Requesting runs for workflow %s on branch %s", workflow.name, target_branch
+    )
+
+    workflow_runs = workflow.get_runs(branch=target_branch)
+
+    if workflow_runs.totalCount == 0:
         return None
-    else:
-        last_run_date = workflow_runs[0]["created_at"]
-        return isoparse(last_run_date).replace(tzinfo=None)
+
+    return workflow_runs[0].created_at.replace(tzinfo=None)
 
 
 def main() -> None:
@@ -117,10 +130,6 @@ def main() -> None:
     # Create a Github access object
     g = Github(access_token)
 
-    # Set up a session to do things the Github library has not yet implemented.
-    session: requests.Session = requests.Session()
-    session.auth = ("", access_token)
-
     repos = get_repo_list(g, repo_query)
 
     rebuilds_triggered: int = 0
@@ -135,10 +144,21 @@ def main() -> None:
     for repo in repos:
         repo_status: dict = dict()
         all_repo_status["repositories"][repo.full_name] = repo_status
-        last_run = get_last_run(session, repo, workflow_id)
-        if last_run is None:
-            # repo does not have the workflow configured
+        target_workflow = get_workflow(repo, workflow_id)
+        if target_workflow is None:
+            # Repo does not have the workflow configured
             logging.info("%s does not have workflow %s", repo.full_name, workflow_id)
+            repo_status["workflow"] = None
+            continue
+        last_run = get_last_run(target_workflow, repo.default_branch)
+        if last_run is None:
+            # Repo does not have any workflow runs that count
+            logging.info(
+                "%s does not have workflow runs for %s on default branch %s",
+                repo.full_name,
+                workflow_id,
+                repo.default_branch,
+            )
             repo_status["workflow"] = None
             continue
         # repo has the workflow we're looking for
