@@ -142,6 +142,7 @@ def main() -> None:
         "repositories": dict(),
         "repository_query": repo_query,
     }
+    repos_sent_events = []
     for repo in repos:
         core.start_group(repo.full_name)
         repo_status: dict = dict()
@@ -185,15 +186,17 @@ def main() -> None:
                     rebuilds_triggered,
                     repo.full_name,
                 )
-                core.notice(
-                    f"Sent {event_type} ({rebuilds_triggered}/{max_rebuilds})",
-                    title=repo.full_name,
-                )
+                repos_sent_events.append(repo.full_name)
                 if rebuilds_triggered == max_rebuilds:
                     logging.warning("Max rebuild events sent.")
         else:
             logging.info("%s is OK: %s", repo.full_name, format_timedelta(delta))
         core.end_group()
+
+    core.notice(
+        "\n".join(["Repositories sent events:", *repos_sent_events]),
+        title=f"Sent {rebuilds_triggered} '{event_type}' events",
+    )
 
     # Write json state to an output file
     status_file: Path = Path(github_workspace_dir) / Path(write_filename)
