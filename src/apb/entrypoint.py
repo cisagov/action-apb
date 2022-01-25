@@ -10,6 +10,7 @@ import sys
 from typing import Generator, Optional
 
 # Third-Party Libraries
+from actions_toolkit import core
 from babel.dates import format_timedelta
 from dateutil.relativedelta import relativedelta
 from github import Github, GithubException, Repository, Workflow
@@ -142,6 +143,7 @@ def main() -> None:
         "repository_query": repo_query,
     }
     for repo in repos:
+        core.start_group(repo.full_name)
         repo_status: dict = dict()
         all_repo_status["repositories"][repo.full_name] = repo_status
         target_workflow = get_workflow(repo, workflow_id)
@@ -149,6 +151,7 @@ def main() -> None:
             # Repo does not have the workflow configured
             logging.info("%s does not have workflow %s", repo.full_name, workflow_id)
             repo_status["workflow"] = None
+            core.end_group()
             continue
         last_run = get_last_run(target_workflow, repo.default_branch)
         if last_run is None:
@@ -160,6 +163,7 @@ def main() -> None:
                 repo.default_branch,
             )
             repo_status["workflow"] = None
+            core.end_group()
             continue
         # repo has the workflow we're looking for
         repo_status["workflow"] = workflow_id
@@ -181,10 +185,15 @@ def main() -> None:
                     rebuilds_triggered,
                     repo.full_name,
                 )
+                core.notice(
+                    f"Sent {event_type} ({rebuilds_triggered}/{max_rebuilds})",
+                    title=repo.full_name,
+                )
                 if rebuilds_triggered == max_rebuilds:
                     logging.warning("Max rebuild events sent.")
         else:
             logging.info("%s is OK: %s", repo.full_name, format_timedelta(delta))
+        core.end_group()
 
     # Write json state to an output file
     status_file: Path = Path(github_workspace_dir) / Path(write_filename)
