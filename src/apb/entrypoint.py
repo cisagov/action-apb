@@ -69,7 +69,9 @@ def get_last_run(workflow: Workflow.Workflow, target_branch: str) -> Optional[da
 def main() -> None:
     """Parse evironment and perform requested actions."""
     # Set up logging
-    logging.basicConfig(format="%(levelname)s %(message)s", level="INFO")
+    logging.basicConfig(
+        format="%(levelname)s %(message)s", level=logging.INFO, stream=sys.stdout
+    )
 
     # Get inputs from the environment
     access_token: Optional[str] = os.environ.get("INPUT_ACCESS_TOKEN")
