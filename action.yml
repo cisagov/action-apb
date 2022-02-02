@@ -19,6 +19,16 @@ inputs:
     description: "repository_dispatch event type to send."
     required: false
     default: "apb"
+  include_non_public_repos:
+    default: false
+    description: "Whether to process non-public (`private` and `internal`)
+      repositories."
+    required: false
+  mask_non_public_repos:
+    default: true
+    description: "Whether to mask the names of non-public (`private` and
+      `internal`) repositories in the GitHub Actions logs."
+    required: false
   max_rebuilds:
     description: "Limit the number of rebuilds that will be triggered."
     required: false

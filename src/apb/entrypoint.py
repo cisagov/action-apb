@@ -76,6 +76,8 @@ def main() -> None:
     build_age: Optional[str] = os.environ.get("INPUT_BUILD_AGE")
     event_type: Optional[str] = os.environ.get("INPUT_EVENT_TYPE")
     github_workspace_dir: Optional[str] = os.environ.get("GITHUB_WORKSPACE")
+    include_non_public: bool = core.get_boolean_input("include_non_public_repos")
+    mask_non_public: bool = core.get_boolean_input("mask_non_public_repos")
     max_rebuilds: int = int(os.environ.get("INPUT_MAX_REBUILDS", 10))
     repo_query: Optional[str] = os.environ.get("INPUT_REPO_QUERY")
     workflow_id: Optional[str] = os.environ.get("INPUT_WORKFLOW_ID")
@@ -144,6 +146,13 @@ def main() -> None:
     }
     repos_sent_events = []
     for repo in repos:
+        # Extra controls if the repo is non-public
+        if repo.private:
+            if not include_non_public:
+                continue
+            # Ensure that non-public repo names do not show up in the logs
+            if mask_non_public:
+                core.set_secret(repo.full_name)
         core.start_group(repo.full_name)
         repo_status: dict = dict()
         all_repo_status["repositories"][repo.full_name] = repo_status
