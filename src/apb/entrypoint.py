@@ -15,6 +15,7 @@ from babel.dates import format_timedelta
 from dateutil.relativedelta import relativedelta
 from github import Github, GithubException, Repository, Workflow
 import pytimeparse
+import ruamel.yaml
 
 
 def get_repo_list(
@@ -50,6 +51,50 @@ def get_workflow(
         return None
 
     return workflow
+
+
+def validate_workflow(repo: Repository.Repository, workflow: Workflow.Workflow) -> bool:
+    """Validate that the workflow file still exists and has apb support."""
+    # Check for the workflow file on the repository's default branch
+    try:
+        workflow_file = repo.get_contents(workflow.path, ref=repo.default_branch)
+    except GithubException as err:
+        if err.status == 404:
+            logging.info(
+                "No workflow file '%s' found on the '%s' branch of %s",
+                workflow.path,
+                repo.default_branch,
+                repo.full_name,
+            )
+        else:
+            logging.exception(
+                "Error retrieving workflow file %s in the '%s' branch of %s",
+                workflow.path,
+                repo.default_branch,
+                repo.full_name,
+            )
+
+        return False
+
+    workflow_yaml = ruamel.yaml.safe_load(workflow_file.decoded_content)
+
+    repository_dispatch_types = (
+        workflow_yaml.get("on", {}).get("repository_dispatch", {}).get("types", [])
+    )
+
+    if "apb" not in repository_dispatch_types:
+        logging.info(
+            "Workflow file '%s' in %s does not support apb repository dispatch",
+            workflow.path,
+            repo.full_name,
+        )
+        core.warning(
+            f"Workflow file '{workflow.path}' does not support apb repository dispatch.",
+            title=repo.full_name,
+        )
+        return False
+
+    return True
 
 
 def get_last_run(workflow: Workflow.Workflow, target_branch: str) -> Optional[datetime]:
@@ -179,6 +224,11 @@ def main() -> None:
             repo_status["workflow"] = None
             core.end_group()
             continue
+        if not validate_workflow(repo, target_workflow):
+            # Repository is either missing a workflow file in the default
+            # branch or it has one and it is incorrenctly configured,
+            repo_status["workflow"] = None
+            core.end_group()
         # repo has the workflow we're looking for
         repo_status["workflow"] = workflow_id
         delta = now - last_run
