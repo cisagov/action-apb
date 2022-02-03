@@ -78,11 +78,25 @@ def validate_workflow(repo: Repository.Repository, workflow: Workflow.Workflow) 
 
     workflow_yaml = ruamel.yaml.safe_load(workflow_file.decoded_content)
 
-    repository_dispatch_types = (
-        workflow_yaml.get("on", {}).get("repository_dispatch", {}).get("types", [])
-    )
+    workflow_triggers = workflow_yaml.get("on", {})
+    repository_dispatches: Optional[dict]
+    repository_dispatch_types: Optional[list]
+    if type(workflow_triggers) == list:
+        repository_dispatches = (
+            {} if "repository_dispatch" in workflow_triggers else None
+        )
+        repository_dispatch_types = None
+    else:
+        repository_dispatches = workflow_triggers.get("repository_dispatch", None)
+        repository_dispatch_types = (
+            repository_dispatches.get("types", None)
+            if repository_dispatches is not None
+            else None
+        )
 
-    if "apb" not in repository_dispatch_types:
+    if repository_dispatches is None or (
+        repository_dispatch_types is not None and "apb" not in repository_dispatch_types
+    ):
         logging.info(
             "Workflow file '%s' in %s does not support apb repository dispatch",
             workflow.path,
