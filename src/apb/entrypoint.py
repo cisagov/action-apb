@@ -148,16 +148,18 @@ def main() -> None:
     }
     repos_sent_events = []
     for repo in repos:
+        repo_status: dict = dict()
+        all_repo_status["repositories"][repo.full_name] = repo_status
         # Extra controls if the repo is non-public
         if repo.private:
             if not include_non_public:
+                del all_repo_status["repositories"][repo.full_name]
                 continue
             # Ensure that non-public repo names do not show up in the logs
             if mask_non_public:
                 core.set_secret(repo.full_name)
+                del all_repo_status["repositories"][repo.full_name]
         core.start_group(repo.full_name)
-        repo_status: dict = dict()
-        all_repo_status["repositories"][repo.full_name] = repo_status
         target_workflow = get_workflow(repo, workflow_id)
         if target_workflow is None:
             # Repo does not have the workflow configured
