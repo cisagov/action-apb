@@ -76,7 +76,15 @@ def validate_workflow(repo: Repository.Repository, workflow: Workflow.Workflow) 
 
         return False
 
-    workflow_yaml = ruamel.yaml.safe_load(workflow_file.decoded_content)
+    try:
+        workflow_yaml = ruamel.yaml.safe_load(workflow_file.decoded_content)
+    except ruamel.yaml.YAMLError:
+        logging.exception("Unable to process '%s' in %s", workflow.path, repo.full_name)
+        core.warning(
+            f"Workflow file '{workflow.path}' is possibly malformed.",
+            title=repo.full_name,
+        )
+        return False
 
     # This next section validates that the workflow file is configured to
     # process `apb` repository dispatch events. Please see
