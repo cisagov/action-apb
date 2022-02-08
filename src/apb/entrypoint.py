@@ -78,6 +78,10 @@ def validate_workflow(repo: Repository.Repository, workflow: Workflow.Workflow) 
 
     workflow_yaml = ruamel.yaml.safe_load(workflow_file.decoded_content)
 
+    # This next section validates that the workflow file is configured to
+    # process `apb` repository dispatch events. Please see
+    # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#repository_dispatch
+    # for more information.
     workflow_triggers = workflow_yaml.get("on", {})
     repository_dispatches: Optional[dict]
     repository_dispatch_types: Optional[list]
@@ -94,6 +98,8 @@ def validate_workflow(repo: Repository.Repository, workflow: Workflow.Workflow) 
             else None
         )
 
+    # We either need a blanket `repository_dispatch` trigger or for `apb` to be
+    # in the optional `types` subkey.
     if repository_dispatches is None or (
         repository_dispatch_types is not None and "apb" not in repository_dispatch_types
     ):
