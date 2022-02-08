@@ -92,6 +92,7 @@ setup(
         "PyGithub",
         "python-dateutil",
         "pytimeparse",
+        "ruamel.yaml",
         "setuptools >= 24.2.0",
     ],
     extras_require={

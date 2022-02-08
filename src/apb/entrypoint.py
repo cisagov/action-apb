@@ -15,6 +15,7 @@ from babel.dates import format_timedelta
 from dateutil.relativedelta import relativedelta
 from github import Github, GithubException, Repository, Workflow
 import pytimeparse
+import ruamel.yaml
 
 
 def get_repo_list(
@@ -50,6 +51,78 @@ def get_workflow(
         return None
 
     return workflow
+
+
+def validate_workflow(repo: Repository.Repository, workflow: Workflow.Workflow) -> bool:
+    """Validate that the workflow file still exists and has apb support."""
+    # Check for the workflow file on the repository's default branch
+    try:
+        workflow_file = repo.get_contents(workflow.path, ref=repo.default_branch)
+    except GithubException as err:
+        if err.status == 404:
+            logging.info(
+                "No workflow file '%s' found on the '%s' branch of %s",
+                workflow.path,
+                repo.default_branch,
+                repo.full_name,
+            )
+        else:
+            logging.exception(
+                "Error retrieving workflow file %s in the '%s' branch of %s",
+                workflow.path,
+                repo.default_branch,
+                repo.full_name,
+            )
+
+        return False
+
+    try:
+        workflow_yaml = ruamel.yaml.safe_load(workflow_file.decoded_content)
+    except ruamel.yaml.YAMLError:
+        logging.exception("Unable to process '%s' in %s", workflow.path, repo.full_name)
+        core.warning(
+            f"Workflow file '{workflow.path}' is possibly malformed.",
+            title=repo.full_name,
+        )
+        return False
+
+    # This next section validates that the workflow file is configured to
+    # process `apb` repository dispatch events. Please see
+    # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#repository_dispatch
+    # for more information.
+    workflow_triggers = workflow_yaml.get("on", {})
+    repository_dispatches: Optional[dict]
+    repository_dispatch_types: Optional[list]
+    if type(workflow_triggers) == list:
+        repository_dispatches = (
+            {} if "repository_dispatch" in workflow_triggers else None
+        )
+        repository_dispatch_types = None
+    else:
+        repository_dispatches = workflow_triggers.get("repository_dispatch", None)
+        repository_dispatch_types = (
+            repository_dispatches.get("types", None)
+            if repository_dispatches is not None
+            else None
+        )
+
+    # We either need a blanket `repository_dispatch` trigger or for `apb` to be
+    # in the optional `types` subkey.
+    if repository_dispatches is None or (
+        repository_dispatch_types is not None and "apb" not in repository_dispatch_types
+    ):
+        logging.info(
+            "Workflow file '%s' in %s does not support apb repository dispatch",
+            workflow.path,
+            repo.full_name,
+        )
+        core.warning(
+            f"Workflow file '{workflow.path}' does not support apb repository dispatch.",
+            title=repo.full_name,
+        )
+        return False
+
+    return True
 
 
 def get_last_run(workflow: Workflow.Workflow, target_branch: str) -> Optional[datetime]:
@@ -179,6 +252,11 @@ def main() -> None:
             repo_status["workflow"] = None
             core.end_group()
             continue
+        if not validate_workflow(repo, target_workflow):
+            # Repository is either missing a workflow file in the default
+            # branch or it has one and it is incorrenctly configured,
+            repo_status["workflow"] = None
+            core.end_group()
         # repo has the workflow we're looking for
         repo_status["workflow"] = workflow_id
         delta = now - last_run
