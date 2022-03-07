@@ -32,7 +32,7 @@ jobs:
       - name: Generate markdown
         uses: cisagov/action-apb-dashboard@develop
       - name: Checkout wiki
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: wiki
           repository: "${{ github.repository }}.wiki"
