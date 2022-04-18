@@ -16,6 +16,10 @@ LABEL org.opencontainers.image.title="All Projects Builder GitHub Action"
 LABEL org.opencontainers.image.vendor="Cybersecurity and Infrastructure Security Agency"
 LABEL org.opencontainers.image.version=${VERSION}
 
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
+
 COPY . ./
 RUN apk add --no-cache build-base libffi-dev
 RUN python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel
