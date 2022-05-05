@@ -25,7 +25,7 @@ jobs:
           repo_query: "org:cisagov archived:false"
           workflow_id: "build.yml"
       - name: Save apb output as an artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: apb.json
           path: apb.json
