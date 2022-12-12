@@ -44,6 +44,7 @@ jobs:
           git remote set-url origin \
           https://$GITHUB_ACTOR:$ACCESS_TOKEN@github.com/$GITHUB_REPOSITORY.wiki.git
           git config --global user.name $GITHUB_ACTOR
+          git config --global user.email $GITHUB_ACTOR@github.com
           git add .
           git commit -m "$GITHUB_EVENT_NAME"
           git push
