@@ -30,7 +30,7 @@ jobs:
           name: apb.json
           path: apb.json
       - name: Generate markdown
-        uses: cisagov/action-apb-dashboard@develop
+        uses: cisagov/action-apb-dashboard@improvement/switch_to_chevron_from_pystache
       - name: Checkout wiki
         uses: actions/checkout@v2
         with:
