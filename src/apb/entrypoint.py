@@ -24,8 +24,7 @@ def get_repo_list(
     """Generate a list of repositories based on the query."""
     print(f"Querying for repositories: {repo_query}")
     matching_repos = g.search_repositories(query=repo_query)
-    for repo in matching_repos:
-        yield repo
+    yield from matching_repos
 
 
 def get_last_run(
