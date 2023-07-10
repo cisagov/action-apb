@@ -1,4 +1,29 @@
-"""GitHub Action to rebuild respositories that haven't been built in a while."""
+"""Tool to rebuild repositories that haven't been built in a while.
+
+This tool allows you to use environment variables to provide necessary information. Any
+options provided on the command-line will be used instead of any environment variables
+that have been set.
+
+Usage:
+  apb [--log-level <level>] [--github-token <token>] [--repo-query <query>] [--workflow-name <workflow>] [--build-age <age>] [--event-type >event>] [--max-rebuilds <limit>] [--output-dir <dir>] [--output-file <file>]
+
+Options:
+  --github-token <token>      The GitHub Personal Access Token to use for authentication.
+  --repo-query <query>        The query used to find GitHub repositories to check.
+  --workflow-name <workflow>  The name of the workflow that should be checked by the
+                              tool.
+  --build-age <age>           The maximum age of the last workflow run before a repository
+                              dispatch is created.
+  --event-type >event>        The type of event to send when a repository dispatch is
+                              created.
+  --max-rebuilds <limit>      The maximum number of rebuilds dispatches to create in a
+                              single run of the tool.
+  --output-dir <dir>          The directory that should house the created state file.
+  --output-file <file>        The name to use when creating the state file.
+  --log-level <level>         The log level to use if specified. Valid values are
+                              "debug", "info", "warning", "error", and "critical".
+                              [default: info]
+"""
 
 # Standard Python Libraries
 from datetime import datetime
@@ -7,15 +32,18 @@ import logging
 import os
 from pathlib import Path
 import sys
-from typing import Generator, Optional
+from typing import Dict, Generator, Optional
 
 # Third-Party Libraries
 from babel.dates import format_timedelta
 from dateutil.parser import isoparse
 from dateutil.relativedelta import relativedelta
+import docopt
 from github import Github, Repository
 import pytimeparse
 import requests
+
+from ._version import __version__
 
 
 def get_repo_list(
@@ -50,18 +78,68 @@ def get_last_run(
 
 def main() -> None:
     """Parse evironment and perform requested actions."""
+    args: Dict[str, str] = docopt.docopt(__doc__, version=__version__)
+    # Get the list of logging levels supported by the logging library. Filter out
+    # values that are deprecated or not actual logging levels.
+    log_levels = [
+        level.lower()
+        for level in list(logging._nameToLevel.keys() - ["NOTSET", "WARN"])
+    ]
+    if args["--log-level"].lower() not in log_levels:
+        print(
+            "Possible values for --log-level are "
+            + ", ".join(log_levels[:-1])
+            + ", and "
+            + log_levels[-1],
+            file=sys.stderr,
+        )
+        sys.exit(-1)
     # Set up logging
-    logging.basicConfig(format="%(levelname)s %(message)s", level="INFO")
+    logging.basicConfig(
+        format="%(levelname)s %(message)s", level=args["--log-level"].upper()
+    )
 
     # Get inputs from the environment
-    access_token: Optional[str] = os.environ.get("INPUT_ACCESS_TOKEN")
-    build_age: Optional[str] = os.environ.get("INPUT_BUILD_AGE")
-    event_type: Optional[str] = os.environ.get("INPUT_EVENT_TYPE")
-    github_workspace_dir: Optional[str] = os.environ.get("GITHUB_WORKSPACE")
-    max_rebuilds: int = int(os.environ.get("INPUT_MAX_REBUILDS", 10))
-    repo_query: Optional[str] = os.environ.get("INPUT_REPO_QUERY")
-    workflow_id: Optional[str] = os.environ.get("INPUT_WORKFLOW_ID")
-    write_filename: Optional[str] = os.environ.get("INPUT_WRITE_FILENAME", "apb.json")
+    access_token: Optional[str] = (
+        args["--github-token"]
+        if args["--github-token"] is not None
+        else os.environ.get("INPUT_ACCESS_TOKEN")
+    )
+    build_age: Optional[str] = (
+        args["--build-age"]
+        if args["--build-age"] is not None
+        else os.environ.get("INPUT_BUILD_AGE")
+    )
+    event_type: Optional[str] = (
+        args["--event-type"]
+        if args["--event-type"] is not None
+        else os.environ.get("INPUT_EVENT_TYPE")
+    )
+    github_workspace_dir: Optional[str] = (
+        args["--output-dir"]
+        if args["--output-dir"] is not None
+        else os.environ.get("GITHUB_WORKSPACE")
+    )
+    max_rebuilds: int = int(
+        args["--max-rebuilds"]
+        if args["--max-rebuilds"] is not None
+        else os.environ.get("INPUT_MAX_REBUILDS", "10")
+    )
+    repo_query: Optional[str] = (
+        args["--repo-query"]
+        if args["--repo-query"] is not None
+        else os.environ.get("INPUT_REPO_QUERY")
+    )
+    workflow_id: Optional[str] = (
+        args["--workflow-name"]
+        if args["--workflow-name"] is not None
+        else os.environ.get("INPUT_WORKFLOW_ID")
+    )
+    write_filename: Optional[str] = (
+        args["--output-file"]
+        if args["--output-file"] is not None
+        else os.environ.get("INPUT_WRITE_FILENAME", "apb.json")
+    )
 
     # sanity checks
     if access_token is None:

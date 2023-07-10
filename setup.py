@@ -92,6 +92,7 @@ setup(
     include_package_data=True,
     install_requires=[
         "Babel",
+        "docopt",
         "PyGithub",
         "python-dateutil",
         "pytimeparse",
