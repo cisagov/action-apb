@@ -163,6 +163,7 @@ repos:
         additional_dependencies:
           - types-python-dateutil
           - types-requests
+          - types-setuptools
   - repo: https://github.com/pypa/pip-audit
     rev: v2.7.3
     hooks:
