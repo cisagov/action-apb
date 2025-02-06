@@ -94,7 +94,7 @@ setup(
         "PyGithub",
         "python-dateutil",
         "pytimeparse",
-        "setuptools >= 24.2.0",
+        "setuptools",
     ],
     extras_require={
         # IMPORTANT: Keep type hinting-related dependencies of the dev section
