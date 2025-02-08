@@ -8,10 +8,18 @@ import pytest
 
 # cisagov Libraries
 import apb
+import apb.entrypoint
 
 # define sources of version strings
 PROJECT_VERSION = apb.__version__
 RELEASE_TAG = os.getenv("RELEASE_TAG")
+
+
+def test_unset_ca_variables():
+    """Test that CA variables are unset."""
+    os.environ["REQUESTS_CA_BUNDLE"] = "test"
+    apb.entrypoint.clear_ca_variables_in_gha()
+    assert "REQUESTS_CA_BUNDLE" not in os.environ
 
 
 @pytest.mark.skipif(
