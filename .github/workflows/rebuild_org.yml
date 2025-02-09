@@ -55,7 +55,7 @@ jobs:
         with:
           egress-policy: audit
       - name: Check all organization repositories
-        uses: cisagov/action-apb@develop
+        uses: cisagov/action-apb@bug/work_with_actions-permissions_action
         with:
           access_token: ${{ env.ACCESS_TOKEN }}
           build_age: "7d"
