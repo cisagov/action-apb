@@ -1,7 +1,7 @@
 ---
 name: rebuild_org
 
-on:
+on:  # yamllint disable-line rule:truthy
   repository_dispatch:
     types: [run_tmate, run]
   schedule:
