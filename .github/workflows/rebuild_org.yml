@@ -1,11 +1,13 @@
 ---
 name: rebuild_org
 
-on:
+on:  # yamllint disable-line rule:truthy
   repository_dispatch:
-    types: [run_tmate, run]
+    types:
+      - run_tmate
+      - run
   schedule:
-    - cron: "0 0-4 * * *"
+    - cron: 0 0-4 * * *
   workflow_dispatch:
 
 env:
@@ -58,11 +60,11 @@ jobs:
         uses: cisagov/action-apb@develop
         with:
           access_token: ${{ env.ACCESS_TOKEN }}
-          build_age: "7d"
-          event_type: "apb"
+          build_age: 7d
+          event_type: apb
           max_rebuilds: 20
-          repo_query: "org:cisagov archived:false"
-          workflow_id: "build.yml"
+          repo_query: org:cisagov archived:false
+          workflow_id: build.yml
       - name: Save apb output as an artifact
         uses: actions/upload-artifact@v4
         with:
@@ -74,7 +76,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: wiki
-          repository: "${{ github.repository }}.wiki"
+          repository: ${{ github.repository }}.wiki
           token: ${{ env.ACCESS_TOKEN }}
       - name: Commit changes to wiki
         run: |
