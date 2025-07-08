@@ -37,11 +37,20 @@ def get_repo_list(
     yield from matching_repos
 
 
-def get_last_run(
+def get_last_run_on_default_branch(
     session: requests.Session, repo: Repository.Repository, workflow_id: str
 ) -> Optional[datetime]:
-    """Get the last run time for a workflow in a respository."""
-    logging.debug(f"Requesting workflow runs for repository {repo.name}")
+    """Get last run time for a workflow on default branch in a respository."""
+    logging.debug(f"Requesting repository information for repository {repo.name}")
+    response = session.get(f"https://api.github.com/repos/{repo.full_name}")
+    if response.status_code != 200:
+        logging.debug(f"Invalid repository {repo.full_name}, {response.status_code}")
+        return None
+    default_branch = response.json()["default_branch"]
+
+    logging.debug(
+        f"Requesting workflow runs on {default_branch} for repository {repo.name}"
+    )
     response = session.get(
         f"https://api.github.com/repos/{repo.full_name}/actions/workflows/{workflow_id}/runs"
     )
@@ -51,10 +60,13 @@ def get_last_run(
         )
         return None
     workflow_runs = response.json()["workflow_runs"]
-    if len(workflow_runs) == 0:
+    workflow_runs_on_default_branch = [
+        run for run in workflow_runs if run["head_branch"] == default_branch
+    ]
+    if len(workflow_runs_on_default_branch) == 0:
         return None
     else:
-        last_run_date = workflow_runs[0]["created_at"]
+        last_run_date = workflow_runs_on_default_branch[0]["created_at"]
         return isoparse(last_run_date).replace(tzinfo=None)
 
 
@@ -148,7 +160,7 @@ def main() -> None:
     for repo in repos:
         repo_status: dict = dict()
         all_repo_status["repositories"][repo.full_name] = repo_status
-        last_run = get_last_run(session, repo, workflow_id)
+        last_run = get_last_run_on_default_branch(session, repo, workflow_id)
         if last_run is None:
             # repo does not have the workflow configured
             logging.info(f"{repo.full_name} does not have workflow {workflow_id}")
