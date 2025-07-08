@@ -60,7 +60,7 @@ def get_last_run_on_default_branch(
         )
         return None
 
-    # Find the date of the most recent workflow run against the default branch.
+    # Find the date of the most recent workflow run against the default branch
     last_run_date = None
     for run in response.json()["workflow_runs"]:
         if run["head_branch"] == default_branch:
