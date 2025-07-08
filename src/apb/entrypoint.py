@@ -59,16 +59,15 @@ def get_last_run_on_default_branch(
             f"No previous runs for {workflow_id} in {repo.full_name}, {response.status_code}"
         )
         return None
-    workflow_runs_on_default_branch = [
-        run
-        for run in response.json()["workflow_runs"]
-        if run["head_branch"] == default_branch
-    ]
-    if len(workflow_runs_on_default_branch) == 0:
-        return None
-    else:
-        last_run_date = workflow_runs_on_default_branch[0]["created_at"]
-        return isoparse(last_run_date).replace(tzinfo=None)
+
+    # Find the date of the most recent workflow run against the default branch.
+    last_run_date = None
+    for run in response.json()["workflow_runs"]:
+        if run["head_branch"] == default_branch:
+            last_run_date = isoparse(run["created_at"]).replace(tzinfo=None)
+            break
+
+    return last_run_date
 
 
 def main() -> None:
