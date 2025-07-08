@@ -59,9 +59,10 @@ def get_last_run_on_default_branch(
             f"No previous runs for {workflow_id} in {repo.full_name}, {response.status_code}"
         )
         return None
-    workflow_runs = response.json()["workflow_runs"]
     workflow_runs_on_default_branch = [
-        run for run in workflow_runs if run["head_branch"] == default_branch
+        run
+        for run in response.json()["workflow_runs"]
+        if run["head_branch"] == default_branch
     ]
     if len(workflow_runs_on_default_branch) == 0:
         return None
