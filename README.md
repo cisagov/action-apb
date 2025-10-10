@@ -1,7 +1,7 @@
 # action-apb #
 
 [![GitHub Build Status](https://github.com/cisagov/action-apb/workflows/build/badge.svg)](https://github.com/cisagov/action-apb/actions)
-[![Lineage Scan Status](https://github.com/cisagov/action-apb/workflows/lineage_scan/badge.svg)](https://github.com/cisagov/action-apb/actions?query=workflow%3Alineage_scan)
+[![Rebuild Org Status](https://github.com/cisagov/action-apb/workflows/rebuild_org/badge.svg)](https://github.com/cisagov/action-apb/actions?query=workflow%3Arebuild_org)
 [![CodeQL](https://github.com/cisagov/action-apb/workflows/CodeQL/badge.svg)](https://github.com/cisagov/action-apb/actions/workflows/codeql-analysis.yml)
 [![Coverage Status](https://coveralls.io/repos/github/cisagov/action-apb/badge.svg?branch=develop)](https://coveralls.io/github/cisagov/action-apb?branch=develop)
 
