@@ -37,7 +37,6 @@ dependencies = [
     "PyGithub",
     "python-dateutil",
     "pytimeparse",
-    "setuptools",
 ]
 description = "GitHub Action to rebuild repositories that haven't been built in a while."
 dynamic = ["readme", "version"]
@@ -56,7 +55,6 @@ requires-python = ">=3.10"
 dev = [
     "types-python-dateutil",
     "types-requests",
-    "types-setuptools",
 ]
 test = [
     "coverage",
