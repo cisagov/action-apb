@@ -39,7 +39,7 @@ dependencies = [
     "pytimeparse",
     "setuptools",
 ]
-description = "GitHub Action to rebuild repositories that haven't be built in a while."
+description = "GitHub Action to rebuild repositories that haven't been built in a while."
 dynamic = ["readme", "version"]
 keywords = ["apb"]
 license = "CC0-1.0"
