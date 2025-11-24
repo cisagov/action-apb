@@ -2,6 +2,7 @@
 
 [![GitHub Build Status](https://github.com/cisagov/action-apb/workflows/build/badge.svg)](https://github.com/cisagov/action-apb/actions)
 [![License](https://img.shields.io/github/license/cisagov/action-apb)](https://spdx.org/licenses/)
+[![Rebuild Org Status](https://github.com/cisagov/action-apb/workflows/rebuild_org/badge.svg)](https://github.com/cisagov/action-apb/actions?query=workflow%3Arebuild_org)
 [![CodeQL](https://github.com/cisagov/action-apb/workflows/CodeQL/badge.svg)](https://github.com/cisagov/action-apb/actions/workflows/codeql-analysis.yml)
 [![Coverage Status](https://coveralls.io/repos/github/cisagov/action-apb/badge.svg?branch=develop)](https://coveralls.io/github/cisagov/action-apb?branch=develop)
 [![Code Style](https://img.shields.io/badge/Code%20Style-black-black)](https://github.com/psf/black)
