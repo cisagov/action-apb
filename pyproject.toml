@@ -66,6 +66,7 @@ test = [
 
 [project.scripts]
 apb = "apb.entrypoint:main"
+
 [project.urls]
 homepage = "https://github.com/cisagov/action-apb"
 issues = "https://github.com/cisagov/action-apb/issues"
