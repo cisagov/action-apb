@@ -1,13 +1,13 @@
 """GitHub Action to rebuild respositories that haven't been built in a while."""
 
 # Standard Python Libraries
+from collections.abc import Generator
 from datetime import datetime
 import json
 import logging
 import os
 from pathlib import Path
 import sys
-from typing import Generator, Optional
 
 # Third-Party Libraries
 from babel.dates import format_timedelta
@@ -39,7 +39,7 @@ def get_repo_list(
 
 def get_last_run_on_default_branch(
     session: requests.Session, repo: Repository.Repository, workflow_id: str
-) -> Optional[datetime]:
+) -> datetime | None:
     """Get last run time for a workflow on default branch in a respository."""
     logging.debug(f"Requesting repository information for repository {repo.name}")
     response = session.get(f"https://api.github.com/repos/{repo.full_name}")
@@ -76,14 +76,14 @@ def main() -> None:
     logging.basicConfig(format="%(levelname)s %(message)s", level="INFO")
 
     # Get inputs from the environment
-    access_token: Optional[str] = os.environ.get("INPUT_ACCESS_TOKEN")
-    build_age: Optional[str] = os.environ.get("INPUT_BUILD_AGE")
-    event_type: Optional[str] = os.environ.get("INPUT_EVENT_TYPE")
-    github_workspace_dir: Optional[str] = os.environ.get("GITHUB_WORKSPACE")
+    access_token: str | None = os.environ.get("INPUT_ACCESS_TOKEN")
+    build_age: str | None = os.environ.get("INPUT_BUILD_AGE")
+    event_type: str | None = os.environ.get("INPUT_EVENT_TYPE")
+    github_workspace_dir: str | None = os.environ.get("GITHUB_WORKSPACE")
     max_rebuilds: int = int(os.environ.get("INPUT_MAX_REBUILDS", 10))
-    repo_query: Optional[str] = os.environ.get("INPUT_REPO_QUERY")
-    workflow_id: Optional[str] = os.environ.get("INPUT_WORKFLOW_ID")
-    write_filename: Optional[str] = os.environ.get("INPUT_WRITE_FILENAME", "apb.json")
+    repo_query: str | None = os.environ.get("INPUT_REPO_QUERY")
+    workflow_id: str | None = os.environ.get("INPUT_WORKFLOW_ID")
+    write_filename: str | None = os.environ.get("INPUT_WRITE_FILENAME", "apb.json")
 
     # sanity checks
     if access_token is None:
