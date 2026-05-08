@@ -154,11 +154,11 @@ def main() -> None:
         "build_age_seconds": build_age_seconds,
         "build_age": build_age,
         "ran_at": now.isoformat(),
-        "repositories": dict(),
+        "repositories": {},
         "repository_query": repo_query,
     }
     for repo in repos:
-        repo_status: dict = dict()
+        repo_status: dict = {}
         all_repo_status["repositories"][repo.full_name] = repo_status
         last_run = get_last_run_on_default_branch(session, repo, workflow_id)
         if last_run is None:
