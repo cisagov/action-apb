@@ -56,7 +56,8 @@ def get_last_run_on_default_branch(
     )
     if response.status_code != 200:
         logging.debug(
-            f"No previous runs for {workflow_id} in {repo.full_name}, {response.status_code}"
+            f"No previous runs for {workflow_id} in {repo.full_name}, "
+            f"{response.status_code}"
         )
         return None
 
@@ -154,11 +155,11 @@ def main() -> None:
         "build_age_seconds": build_age_seconds,
         "build_age": build_age,
         "ran_at": now.isoformat(),
-        "repositories": dict(),
+        "repositories": {},
         "repository_query": repo_query,
     }
     for repo in repos:
-        repo_status: dict = dict()
+        repo_status: dict = {}
         all_repo_status["repositories"][repo.full_name] = repo_status
         last_run = get_last_run_on_default_branch(session, repo, workflow_id)
         if last_run is None:
@@ -179,7 +180,8 @@ def main() -> None:
                 repo.create_repository_dispatch(event_type)
                 repo_status["event_sent"] = True
                 logging.info(
-                    f"Sent {event_type} event #{rebuilds_triggered} to {repo.full_name}."
+                    f"Sent {event_type} event #{rebuilds_triggered} to "
+                    f"{repo.full_name}."
                 )
                 if rebuilds_triggered == max_rebuilds:
                     logging.warning("Max rebuild events sent.")
