@@ -7,13 +7,14 @@ on:  # yamllint disable-line rule:truthy
       - run_tmate
       - run
   # Together these cron schedules ensure that the workflow runs hourly
-  # 7PM to 4AM on weekdays and hourly all day long on the weekends.
+  # 7:05 PM to 4:05 AM on weekdays and hourly all day long on the
+  # weekends.
   schedule:
-    # Run hourly from 7PM until 11PM Eastern time on Monday through
-    # Friday evening.
+    # Run hourly from 7:05 PM until 11:05 PM Eastern time on Monday
+    # through Friday evening.
     - cron: 05 19-23 * * 1-5
       timezone: America/New_York
-    # Run hourly from midnight to 4AM Monday through Friday.
+    # Run hourly from 12:05 AM to 4:05 AM Monday through Friday.
     - cron: 05 0-4 * * 1-5
       timezone: America/New_York
     # Run hourly Saturday and Sunday, all day long.
