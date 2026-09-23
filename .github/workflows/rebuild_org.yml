@@ -11,13 +11,13 @@ on:  # yamllint disable-line rule:truthy
   schedule:
     # Run hourly from 7PM until 11PM Eastern time on Monday through
     # Friday evening.
-    - cron: 0 19-23 * * 1-5
+    - cron: 05 19-23 * * 1-5
       timezone: America/New_York
     # Run hourly from midnight to 4AM Monday through Friday.
-    - cron: 0 0-4 * * 1-5
+    - cron: 05 0-4 * * 1-5
       timezone: America/New_York
     # Run hourly Saturday and Sunday, all day long.
-    - cron: 0 * * * 6,0
+    - cron: 05 * * * 6,0
       timezone: America/New_York
   workflow_dispatch:
 
